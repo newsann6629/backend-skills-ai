@@ -1,10 +1,11 @@
 const mysql = require('mysql2/promise');
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 
 const pool = mysql.createPool({
-    host: global.config.DB_HOST,
-    user: global.config.DB_USER,
-    password: global.config.DB_PASSWORD,
-    database: global.config.DB_NAME,
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'assessment_db',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
