@@ -33,13 +33,13 @@ exports.login = async (req, res) => {
 };
 
 exports.register = async (req, res) => {
-    const { username, email, password, czid, date, phone, salary, start, department, level, position } = req.body;
+    const { username, email, password, czid, bdate, phone, sal, start, dep, level, po } = req.body;
     try {
         const hashed = hashPassword(password);
         await User.create({
-            username, email, password: hashed, czid, bdate: date, phone, 
-            salary, start_date: start, department_id: department, 
-            level_id: level, position_id: position
+            username, email, password: hashed, czid, bdate, phone, 
+            salary: sal, start_date: start, department_id: dep, 
+            level_id: level, position_id: po
         });
         res.json({ data: { message: 'Registration success' } });
     } catch (err) {

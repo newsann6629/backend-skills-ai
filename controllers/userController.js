@@ -34,9 +34,15 @@ exports.getAssessmentForm = async (req, res) => {
 };
 
 exports.saveResult = async (req, res) => {
-    const { user_id, time_id, score, comment, section_id, token } = req.body;
+    // Log incoming data for debugging
+    console.log('--- saveResult Payload ---');
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Files Count:', req.files?.length || 0);
+    if (req.files) req.files.forEach((f, i) => console.log(`File ${i}: ${f.fieldname}, ${f.originalname}, ${f.path}`));
+
+    const { user_id, time_id, score, comment, file_id, token } = req.body;
     
-    const authToken = req.headers.token || token;
+    let authToken = req.headers.token || token;
     let evaluator_id = null;
     
     if (authToken) {
@@ -49,19 +55,23 @@ exports.saveResult = async (req, res) => {
     }
 
     if (!user_id || !time_id || !score) {
+        console.error('Missing required fields:', { user_id, time_id, score_present: !!score });
         return res.status(400).json({ message: 'Missing required fields' });
     }
     
     try {
-        const scores = JSON.parse(score);
+        const scores = Array.isArray(score) ? score : JSON.parse(score);
         const files = req.files || [];
         
+        // Mapping files to section IDs
+        // The frontend sends 'file_id' array matching the files array
         const fileMap = {};
-        if (section_id && files.length > 0) {
-            const sectionIdsArray = Array.isArray(section_id) ? section_id : [section_id];
-            sectionIdsArray.forEach((sid, index) => {
+        if (file_id && files.length > 0) {
+            const fileIdsArray = Array.isArray(file_id) ? file_id : [file_id];
+            
+            fileIdsArray.forEach((fid, index) => {
                 if (files[index]) {
-                    fileMap[sid] = files[index].path;
+                    fileMap[fid] = files[index].path;
                 }
             });
         }
@@ -72,13 +82,17 @@ exports.saveResult = async (req, res) => {
             
             if (value === 'yes') value = 1;
             else if (value === 'no') value = 0;
-            else value = Number(value);
+            else if (value === null || value === undefined) value = 0;
+            else value = Number(value) || 0;
 
-            const fileForThisSection = fileMap[s.section_id] || null;
+            const currentSectionId = s.section_id;
+            const fileForThisSection = fileMap[currentSectionId] || null;
 
             await Result.create({
-                user_id, evaluator_id, time_id, 
-                section_id: s.section_id, 
+                user_id: user_id || null,
+                evaluator_id: evaluator_id || user_id || null,
+                time_id: time_id || null, 
+                section_id: currentSectionId || null, 
                 score: value, 
                 file_path: fileForThisSection, 
                 comment: comment || null
