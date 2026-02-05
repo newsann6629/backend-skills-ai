@@ -24,6 +24,9 @@ router.get('/time', isAuth, userController.getAssessmentTime);
 // GET api/user/form
 router.get('/form', isAuth, userController.getAssessmentForm);
 
+// GET api/user/result
+router.get('/result', isAuth, userController.getUserResult);
+
 // POST api/user/result
 router.post('/result', upload.array('file'), userController.saveResult);
 

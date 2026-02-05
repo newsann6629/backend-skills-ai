@@ -91,8 +91,48 @@ exports.addSection = async (req, res) => {
 
 exports.receiveGroup = async (req, res) => {
     const { member } = req.body;
-    console.log('Group member data:', member);
-    res.json({ message: 'Group data received' });
+    try {
+        const [result] = await pool.execute('INSERT INTO assessment_groups () VALUES ()');
+        const groupId = result.insertId;
+
+        for (const m of member) {
+            await pool.execute(
+                'INSERT INTO group_assignments (group_id, user_id, group_role) VALUES (?, ?, ?)',
+                [groupId, m.user_id, m.role]
+            );
+        }
+        res.json({ message: 'Group created successfully', group_id: groupId });
+    } catch (err) {
+        console.error('AddGroup error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getGroups = async (req, res) => {
+    try {
+        const [groups] = await pool.execute('SELECT group_id FROM assessment_groups ORDER BY created_at DESC');
+        const [members] = await pool.execute(`
+            SELECT ga.*, u.username 
+            FROM group_assignments ga
+            JOIN users u ON ga.user_id = u.id
+        `);
+        // Group.vue expect [groups, members]
+        res.json({ data: [groups, members] });
+    } catch (err) {
+        console.error('GetGroups error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.deleteGroup = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.execute('DELETE FROM assessment_groups WHERE group_id = ?', [id]);
+        res.json({ message: 'Group deleted successfully' });
+    } catch (err) {
+        console.error('DeleteGroup error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
 };
 
 exports.getUserResults = async (req, res) => {
@@ -101,6 +141,17 @@ exports.getUserResults = async (req, res) => {
         res.json({ data: summary });
     } catch (err) {
         console.error('GetUserResult error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.deleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await User.delete(id);
+        res.json({ message: 'Delete success' });
+    } catch (err) {
+        console.error('DeleteUser error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 };

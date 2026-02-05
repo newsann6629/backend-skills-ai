@@ -7,6 +7,7 @@ const pool = require('./config/db');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/user');
+const boardRoutes = require('./routes/board');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +43,7 @@ initDB();
 
 // Middleware
 app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, token, time');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -57,6 +59,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/board', boardRoutes);
+
+// Root level delete as requested by frontend services.js deluser()
+const adminController = require('./controllers/adminController');
+const { isAdmin } = require('./middleware/auth');
+app.delete('/:id', isAdmin, adminController.deleteUser);
 
 app.get('/', (req, res) => res.send('Assessment System API is running'));
 

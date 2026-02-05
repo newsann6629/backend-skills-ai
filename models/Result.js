@@ -1,6 +1,14 @@
 const pool = require('../config/db');
 
 class Result {
+    static async findByUserId(userId) {
+        const [rows] = await pool.execute(
+            'SELECT * FROM results WHERE user_id = ?',
+            [userId]
+        );
+        return rows;
+    }
+
     static async create(resultData) {
         const { user_id, evaluator_id, time_id, section_id, score, file_path, comment } = resultData;
         return await pool.execute(

@@ -55,6 +55,10 @@ class User {
         `);
         return rows;
     }
+
+    static async delete(id) {
+        return await pool.execute('DELETE FROM users WHERE id = ?', [id]);
+    }
 }
 
 module.exports = User;

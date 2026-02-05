@@ -12,6 +12,16 @@ exports.getUserData = async (req, res) => {
     }
 };
 
+exports.getUserResult = async (req, res) => {
+    try {
+        const results = await Result.findByUserId(req.user.id);
+        res.json({ data: results });
+    } catch (err) {
+        console.error('GetUserResult error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 exports.getAssessmentTime = async (req, res) => {
     try {
         const [rows] = await pool.execute('SELECT * FROM assessment_rounds ORDER BY time_id DESC LIMIT 1');

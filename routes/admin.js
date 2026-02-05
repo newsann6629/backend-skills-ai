@@ -27,6 +27,12 @@ router.post('/section', isAdmin, adminController.addSection);
 // POST api/admin/group
 router.post('/group', isAdmin, adminController.receiveGroup);
 
+// GET api/admin/group
+router.get('/group', isAdmin, adminController.getGroups);
+
+// DELETE api/admin/group/:id
+router.delete('/group/:id', isAdmin, adminController.deleteGroup);
+
 // GET api/admin/getuserresult
 router.get('/getuserresult', isAuth, adminController.getUserResults);
 

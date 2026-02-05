@@ -74,6 +74,20 @@ CREATE TABLE IF NOT EXISTS results (
     FOREIGN KEY (section_id) REFERENCES sections(section_id)
 );
 
+CREATE TABLE IF NOT EXISTS assessment_groups (
+    group_id INT AUTO_INCREMENT PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS group_assignments (
+    assignment_id INT AUTO_INCREMENT PRIMARY KEY,
+    group_id INT,
+    user_id INT,
+    group_role VARCHAR(50),
+    FOREIGN KEY (group_id) REFERENCES assessment_groups(group_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Seed data for testing
 -- Seed data for testing
 INSERT IGNORE INTO `position` (position_id, `position`) VALUES 
